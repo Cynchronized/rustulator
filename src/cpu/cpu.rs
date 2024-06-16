@@ -151,7 +151,7 @@ impl CPU {
 
             let opcode = opcodes
                 .get(&code)
-                .expect(&format!("OpCode {:x} is not recognized", opcode));
+                .expect(&format!("OpCode {:x} is not recognized", code));
 
             match code {
                 0xa9 | 0xa5 | 0xb5 | 0xad | 0xbd | 0xb9 | 0xa1 | 0xb1 => {
