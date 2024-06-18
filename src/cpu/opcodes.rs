@@ -28,17 +28,32 @@ lazy_static! {
         /* BREAK */
         OpCode::new(0x00, "BRK", 1, 7, AddressingMode::NoneAddressing),
 
-        //LSR
+        /* NOP */
+        OpCode::new(0xea, "NOP", 1, 2, AddressingMode::NoneAddressing),
+
+        // LSR
         OpCode::new(0x46, "LSR", 2, 5, AddressingMode::ZeroPage),
         OpCode::new(0x56, "LSR", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0x4e, "LSR", 3, 6, AddressingMode::Absolute),
         OpCode::new(0x5e, "LSR", 3, 7, AddressingMode::Absolute_X),
 
-        //ASL
+        // ASL
         OpCode::new(0x06, "ASL", 2, 5, AddressingMode::ZeroPage),
         OpCode::new(0x16, "ASL", 2, 6, AddressingMode::ZeroPage_X),
         OpCode::new(0x0e, "ASL", 3, 6, AddressingMode::Absolute),
         OpCode::new(0x1e, "ASL", 3, 7, AddressingMode::Absolute_X),
+
+        // ROL
+        OpCode::new(0x26, "ROL", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x36, "ROL", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x2e, "ROL", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x3e, "ROL", 3, 7, AddressingMode::Absolute_X),
+
+        // ROR
+        OpCode::new(0x66, "ROR", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x76, "ROR", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x6e, "ROR", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x7e, "ROR", 3, 7, AddressingMode::Absolute_X),
 
         // AND
         OpCode::new(0x29, "AND", 2, 2, AddressingMode::Immediate),

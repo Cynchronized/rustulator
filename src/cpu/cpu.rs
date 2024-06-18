@@ -219,6 +219,26 @@ impl CPU {
                     self.lsr_accumulator();
                 }
 
+                /* ROL */
+                0x26 | 0x36 | 0x2e | 0x3e => {
+                    self.rol(&opcode.mode);
+                }
+
+                /* ROL Accumulator */
+                0x2a => {
+                    self.rol_accumulator();
+                }
+
+                /* ROR */
+                0x66 | 0x76 | 0x6e | 0x73 => {
+                    self.ror(&opcode.mode);
+                }
+
+                /* ROR Accumulator */
+                0x6a => {
+                    self.ror_accumulator();
+                }
+
                 /* AND */
                 0x29 | 0x25 | 0x35 | 0x2d | 0x3d | 0x39 | 0x21 | 0x31 => {
                     self.and(&opcode.mode);
@@ -298,6 +318,13 @@ impl CPU {
                 0x88 => {
                     self.dey();
                 }
+
+                /* Flag Clears */
+
+                /* SEI */
+                0x78 => self.set_interrupt_disable_flag(),
+
+                // TODO: create set flags functions
 
                 /* Transfers */
                 0x98 => self.tya(),
@@ -582,6 +609,10 @@ impl CPU {
 
     fn clear_carry_flag(&mut self) {
         self.status.remove(CpuFlags::CARRY);
+    }
+
+    fn set_interrupt_disable_flag(&mut self) {
+        self.status.insert(CpuFlags::INTERRUPT_DISABLE);
     }
 
     fn update_zero_and_negative_flags(&mut self, result: u8) {
