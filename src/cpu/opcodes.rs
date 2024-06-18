@@ -28,6 +28,18 @@ lazy_static! {
         /* BREAK */
         OpCode::new(0x00, "BRK", 1, 7, AddressingMode::NoneAddressing),
 
+        //LSR
+        OpCode::new(0x46, "LSR", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x56, "LSR", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x4e, "LSR", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x5e, "LSR", 3, 7, AddressingMode::Absolute_X),
+
+        //ASL
+        OpCode::new(0x06, "ASL", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0x16, "ASL", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0x0e, "ASL", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0x1e, "ASL", 3, 7, AddressingMode::Absolute_X),
+
         // AND
         OpCode::new(0x29, "AND", 2, 2, AddressingMode::Immediate),
         OpCode::new(0x25, "AND", 2, 3, AddressingMode::ZeroPage),
@@ -101,6 +113,26 @@ lazy_static! {
         OpCode::new(0x94, "STY", 2, 4, AddressingMode::ZeroPage_X),
         OpCode::new(0x8c, "STY", 3, 4, AddressingMode:: Absolute),
 
+        // CMP
+        OpCode::new(0xc9, "CMP", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xc5, "CMP", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0xd5, "CMP", 2, 4, AddressingMode::ZeroPage_X),
+        OpCode::new(0xcd, "CMP", 3, 4, AddressingMode::Absolute),
+        OpCode::new(0xdd, "CMP", 3, 4 /* +1 if page crossed */, AddressingMode::Absolute_X),
+        OpCode::new(0xd9, "CMP", 3, 4 /* +1 if page crossed */, AddressingMode::Absolute_Y),
+        OpCode::new(0xc1, "CMP", 2, 6, AddressingMode::Indirect_X),
+        OpCode::new(0xd1, "CMP", 2, 5 /* +1 if page crossed */, AddressingMode::Indirect_Y),
+
+        // CPX
+        OpCode::new(0xe0, "CPX", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xe4, "CPX", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0xec, "CPX", 3, 4, AddressingMode::Absolute),
+
+        // CPY
+        OpCode::new(0xc0, "CPY", 2, 2, AddressingMode::Immediate),
+        OpCode::new(0xc4, "CPY", 2, 3, AddressingMode::ZeroPage),
+        OpCode::new(0xcc, "CC", 3, 4, AddressingMode::Absolute),
+
         // INC
         OpCode::new(0xe6, "INC", 2, 5, AddressingMode::ZeroPage),
         OpCode::new(0xf6, "INC", 2, 6, AddressingMode::ZeroPage_X),
@@ -112,6 +144,18 @@ lazy_static! {
 
         // INY
         OpCode::new(0xc8, "INY", 1, 2, AddressingMode::NoneAddressing),
+
+        // DEC
+        OpCode::new(0xc6, "DEC", 2, 5, AddressingMode::ZeroPage),
+        OpCode::new(0xd6, "DEC", 2, 6, AddressingMode::ZeroPage_X),
+        OpCode::new(0xce, "DEC", 3, 6, AddressingMode::Absolute),
+        OpCode::new(0xde, "DEC", 3, 7, AddressingMode::Absolute_X),
+
+        // DEX
+        OpCode::new(0xca, "DEX", 1, 2, AddressingMode::NoneAddressing),
+
+        // DEY
+        OpCode::new(0x88, "DEY", 1, 2, AddressingMode::NoneAddressing),
 
         // Transfer
         OpCode::new(0x98, "TYA", 1, 2, AddressingMode::NoneAddressing),
