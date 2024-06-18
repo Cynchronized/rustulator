@@ -317,22 +317,19 @@ impl CPU {
     fn and(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let data = self.mem_read(addr);
-        self.register_a = data & self.register_a;
-        self.update_zero_and_negative_flags(self.register_a);
+        self.set_register_a(data);
     }
 
     fn eor(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let data = self.mem_read(addr);
-        self.register_a = data ^ self.register_a;
-        self.update_zero_and_negative_flags(self.register_a);
+        self.set_register_a(data);
     }
 
     fn ora(&mut self, mode: &AddressingMode) {
         let addr = self.get_operand_address(mode);
         let data = self.mem_read(addr);
-        self.register_a = data | self.register_a;
-        self.update_zero_and_negative_flags(self.register_a);
+        self.set_register_a(data);
     }
 
     // Bitwise Operations
@@ -344,7 +341,7 @@ impl CPU {
             self.clear_carry_flag();
         }
         data = data << 1;
-        self.register_a = data
+        self.set_register_a(data);
     }
 
     fn asl(&mut self, mode: &AddressingMode) -> u8 {
@@ -356,8 +353,7 @@ impl CPU {
             self.clear_carry_flag();
         }
         data = data << 1;
-        self.mem_write(addr, data);
-        self.update_zero_and_negative_flags(data);
+        self.set_memory(data, addr);
         data
     }
 
@@ -369,7 +365,7 @@ impl CPU {
             self.clear_carry_flag();
         }
         data = data >> 1;
-        self.register_a = data
+        self.set_register_a(data);
     }
 
     fn lsr(&mut self, mode: &AddressingMode) -> u8 {
@@ -381,8 +377,7 @@ impl CPU {
             self.clear_carry_flag();
         }
         data = data >> 1;
-        self.mem_write(addr, data);
-        self.update_zero_and_negative_flags(data);
+        self.set_memory(data, addr);
         data
     }
 
@@ -399,9 +394,23 @@ impl CPU {
         if flag_data {
             data = data | 0b10000000;
         }
-        self.mem_write(addr, data);
-        self.update_zero_and_negative_flags(data);
+        self.set_memory(data, addr);
         data
+    }
+
+    fn ror_accumulator(&mut self) {
+        let mut data = self.register_a;
+        let flag_data = self.status.contains(CpuFlags::CARRY);
+        if data & 1 == 1 {
+            self.set_carry_flag();
+        } else {
+            self.clear_carry_flag();
+        }
+        data = data >> 1;
+        if flag_data {
+            data = data | 0b10000000;
+        }
+        self.set_register_a(data);
     }
 
     fn rol(&mut self, mode: &AddressingMode) -> u8 {
@@ -417,9 +426,23 @@ impl CPU {
         if flag_data {
             data = data | 1;
         }
-        self.mem_write(addr, data);
-        self.update_zero_and_negative_flags(data);
+        self.set_memory(data, addr);
         data
+    }
+
+    fn rol_accumulator(&mut self) {
+        let mut data = self.register_a;
+        let flag_data = self.status.contains(CpuFlags::CARRY);
+        if data >> 7 == 1 {
+            self.set_carry_flag();
+        } else {
+            self.clear_carry_flag();
+        }
+        data = data << 1;
+        if flag_data {
+            data = data | 1;
+        }
+        self.set_register_a(data);
     }
 
     /* Store */
@@ -509,8 +532,7 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let mut data = self.mem_read(addr);
         data = data.wrapping_add(1);
-        self.mem_write(addr, data);
-        self.update_zero_and_negative_flags(data);
+        self.set_memory(data, addr);
     }
 
     fn inx(&mut self) {
@@ -528,8 +550,7 @@ impl CPU {
         let addr = self.get_operand_address(mode);
         let mut data = self.mem_read(addr);
         data = data.wrapping_sub(1);
-        self.mem_write(addr, data);
-        self.update_zero_and_negative_flags(data);
+        self.set_memory(data, addr);
         data
     }
 
@@ -545,6 +566,12 @@ impl CPU {
 
     // TODO: UPDATE functions to use set_register_a function
     // Flag setters
+
+    fn set_memory(&mut self, value: u8, addr: u16) {
+        self.mem_write(addr, value);
+        self.update_zero_and_negative_flags(value);
+    }
+
     fn set_register_a(&mut self, value: u8) {
         self.register_a = value;
         self.update_zero_and_negative_flags(self.register_a);
