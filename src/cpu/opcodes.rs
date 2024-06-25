@@ -180,6 +180,15 @@ lazy_static! {
         OpCode::new(0xba, "TSX", 1, 2, AddressingMode::NoneAddressing),
         OpCode::new(0xa8, "TAY", 1, 2, AddressingMode::NoneAddressing),
 
+        // Flag Clears
+        OpCode::new(0xD8, "CLD", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x58, "CLI", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0xb8, "CLV", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x18, "CLC", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x38, "SEC", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0x78, "SEI", 1, 2, AddressingMode::NoneAddressing),
+        OpCode::new(0xf8, "SED", 1, 2, AddressingMode::NoneAddressing),
+
     ];
 
 

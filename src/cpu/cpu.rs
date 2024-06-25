@@ -258,11 +258,6 @@ impl CPU {
                     // nop -> do nothing
                 }
 
-                /* CLC */
-                0x18 => {
-                    self.status.remove(CpuFlags::CARRY);
-                }
-
                 /* STA */
                 0x85 | 0x95 | 0x8D | 0x9D | 0x99 | 0x81 | 0x91 => {
                     self.sta(&opcode.mode);
@@ -323,6 +318,24 @@ impl CPU {
 
                 /* SEI */
                 0x78 => self.set_interrupt_disable_flag(),
+
+                /* SEC */
+                0x38 => self.set_carry_flag(),
+
+                /* SED */
+                0x48 => self.set_decimal_mode(),
+
+                /* CLC */
+                0x18 => self.clear_carry_flag(),
+
+                /* CLD */
+                0xd8 => self.clear_decimal_mode(),
+
+                /* CLI */
+                0x58 => self.clear_interrupt_disable_flag(),
+
+                /* CLV */
+                0xb8 => self.clear_overflow_flag(),
 
                 // TODO: create set flags functions
 
@@ -591,7 +604,6 @@ impl CPU {
         self.update_zero_and_negative_flags(self.register_y);
     }
 
-    // TODO: UPDATE functions to use set_register_a function
     // Flag setters
 
     fn set_memory(&mut self, value: u8, addr: u16) {
@@ -611,8 +623,24 @@ impl CPU {
         self.status.remove(CpuFlags::CARRY);
     }
 
+    fn set_decimal_mode(&mut self) {
+        self.status.insert(CpuFlags::DECIMAL_MODE);
+    }
+
+    fn clear_decimal_mode(&mut self) {
+        self.status.remove(CpuFlags::DECIMAL_MODE);
+    }
+
     fn set_interrupt_disable_flag(&mut self) {
         self.status.insert(CpuFlags::INTERRUPT_DISABLE);
+    }
+
+    fn clear_interrupt_disable_flag(&mut self) {
+        self.status.remove(CpuFlags::INTERRUPT_DISABLE);
+    }
+
+    fn clear_overflow_flag(&mut self) {
+        self.status.remove(CpuFlags::OVERFLOW);
     }
 
     fn update_zero_and_negative_flags(&mut self, result: u8) {
