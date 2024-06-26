@@ -59,9 +59,9 @@ trait Mem {
     fn mem_write(&mut self, addr: u16, data: u8);
 
     fn mem_read_u16(&self, pos: u16) -> u16 {
-        let lo = self.mem_read_u16(pos) as u16;
-        let hi = self.mem_read_u16(pos + 1) as u16;
-        (hi << 8) | (lo as u16)
+        let lo = self.mem_read_u16(pos);
+        let hi = self.mem_read_u16(pos + 1);
+        (hi << 8) | (lo)
     }
 
     fn mem_write_u16(&mut self, pos: u16, data: u16) {
@@ -151,7 +151,7 @@ impl CPU {
             AddressingMode::Indirect_X => {
                 let base = self.mem_read(self.program_counter);
 
-                let ptr: u8 = (base as u8).wrapping_add(self.register_x);
+                let ptr: u8 = base.wrapping_add(self.register_x);
                 let lo = self.mem_read(ptr as u16);
                 let hi = self.mem_read(ptr.wrapping_add(1) as u16);
                 (hi as u16) << 8 | (lo as u16)
@@ -161,7 +161,7 @@ impl CPU {
                 let base = self.mem_read(self.program_counter);
 
                 let lo = self.mem_read(base as u16);
-                let hi = self.mem_read((base as u8).wrapping_add(1) as u16);
+                let hi = self.mem_read(base .wrapping_add(1) as u16);
                 let deref_base = (hi as u16) << 8 | (lo as u16);
                 let deref = deref_base.wrapping_add(self.register_y as u16);
                 deref
@@ -174,7 +174,7 @@ impl CPU {
     }
 
     pub fn run(&mut self) {
-        let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
+        let ref opcodes: HashMap<u8, &'static OpCode> = *opcodes::OPCODES_MAP;
 
         loop {
             let code = self.mem_read(self.program_counter);
