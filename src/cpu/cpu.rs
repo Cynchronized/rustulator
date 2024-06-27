@@ -460,8 +460,10 @@ impl CPU {
 
                 0x00 => return,
 
-                
                 _ => todo!(),
+            }
+            if program_counter_state == self.program_counter {
+                self.program_counter += (opcode.len - 1) as u16;
             }
         }
     }
