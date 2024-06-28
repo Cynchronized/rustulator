@@ -3,18 +3,6 @@ use std::{collections::HashMap};
 use bitflags::bitflags;
 
 bitflags! {
-// 7  bit  0
-// ---- ----
-// NV1B DIZC
-// |||| ||||
-// |||| |||+- Carry
-// |||| ||+-- Zero
-// |||| |+--- Interrupt Disable
-// |||| +---- Decimal
-// |||+------ (No CPU effect; see: the B flag)
-// ||+------- (No CPU effect; always pushed as 1)
-// |+-------- Overflow
-// +--------- Negative
     pub struct CpuFlags: u8 {
         const CARRY             = 0b00000001;
         const ZERO              = 0b00000010;
@@ -23,10 +11,9 @@ bitflags! {
         const BREAK             = 0b00010000;
         const BREAK2            = 0b00100000;
         const OVERFLOW          = 0b01000000;
-        const NEGATIV           = 0b10000000;
+        const NEGATIV          = 0b10000000;
     }
 }
-
 const STACK: u16 = 0x0100;
 const STACK_RESET: u8 = 0xfd;
 
@@ -193,7 +180,6 @@ impl CPU {
                 .expect(&format!("OpCode {:x} is not recognized", code));
 
             match code {
-
                 /* JMP Absolute */
                 0x4c => {
                     let mem_address = self.mem_read_u16(self.program_counter);
@@ -234,7 +220,7 @@ impl CPU {
 
                 /* RTI */
                 0x40 => {
-                    self.status.bits = self.stack_pop();
+                    self.status = CpuFlags::from_bits_truncate(self.stack_pop());
                     self.status.remove(CpuFlags::BREAK);
                     self.status.insert(CpuFlags::BREAK2);
                     self.program_counter = self.stack_pop_u16();
@@ -461,7 +447,10 @@ impl CPU {
 
                 /* PHP */
                 0x08 => {
-                    self.php();
+                    let mut flags = self.status.clone();
+                    flags.insert(CpuFlags::BREAK);
+                    flags.insert(CpuFlags::BREAK2);
+                    self.stack_push(flags.bits());
                 }
 
                 /* PLP */
@@ -550,16 +539,9 @@ impl CPU {
     }
 
     fn plp(&mut self) {
-        self.status.bits = self.stack_pop();
+        self.status = CpuFlags::from_bits_truncate(self.stack_pop());
         self.status.remove(CpuFlags::BREAK);
         self.status.insert(CpuFlags::BREAK2);
-    }
-
-    fn php(&mut self) {
-        let mut flags = self.status.clone();
-        flags.insert(CpuFlags::BREAK);
-        flags.insert(CpuFlags::BREAK2);
-        self.stack_push(flags.bits());
     }
 
 
