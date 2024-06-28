@@ -1,6 +1,6 @@
 use super::opcodes::{self, OpCode};
-use bitflags::{bitflags, Flags};
-use std::{collections::HashMap, fmt::write};
+use std::{collections::HashMap};
+use bitflags::bitflags;
 
 bitflags! {
 // 7  bit  0
@@ -53,14 +53,14 @@ pub enum AddressingMode {
     Indirect_Y,
     NoneAddressing,
 }
-trait Mem {
+pub trait Mem {
     fn mem_read(&self, addr: u16) -> u8;
 
     fn mem_write(&mut self, addr: u16, data: u8);
 
     fn mem_read_u16(&self, pos: u16) -> u16 {
-        let lo = self.mem_read_u16(pos);
-        let hi = self.mem_read_u16(pos + 1);
+        let lo = self.mem_read(pos) as u16;
+        let hi = self.mem_read(pos + 1) as u16;
         (hi << 8) | (lo)
     }
 
@@ -112,8 +112,8 @@ impl CPU {
     }
 
     pub fn load(&mut self, program: Vec<u8>) {
-        self.memory[0x8000..(0x8000 + program.len())].copy_from_slice(&program[..]);
-        self.mem_write_u16(0xFFFC, 0x8000);
+        self.memory[0x600..(0x600 + program.len())].copy_from_slice(&program[..]);
+        self.mem_write_u16(0xFFFC, 0x600);
     }
 
     fn get_operand_address(&self, mode: &AddressingMode) -> u16 {
@@ -173,7 +173,14 @@ impl CPU {
         }
     }
 
-    pub fn run(&mut self) {
+    pub fn run (&mut self) {
+        self.run_with_callback(|_| {});
+    }
+
+    pub fn run_with_callback<F>(&mut self, mut _callback: F)
+    where
+        F: FnMut(&mut CPU),
+    {
         let ref opcodes: HashMap<u8, &'static OpCode> = *opcodes::OPCODES_MAP;
 
         loop {
@@ -227,16 +234,19 @@ impl CPU {
 
                 /* RTI */
                 0x40 => {
-                    self.status.bits() = self.stack_pop();
+                    self.status.bits = self.stack_pop();
                     self.status.remove(CpuFlags::BREAK);
                     self.status.insert(CpuFlags::BREAK2);
-
                     self.program_counter = self.stack_pop_u16();
                 }
 
                 /* ADC */
                 0x69 | 0x65 | 0x75 | 0x6d | 0x7d | 0x79 | 0x61 | 0x71 => {
                     self.adc(&opcode.mode);
+                }
+
+                0xe9 | 0xe5 | 0xf5 | 0xed | 0xfd | 0xf9 | 0xe1 | 0xf1 => {
+                    self.sbc(&opcode.mode);
                 }
 
                 /* LDA */
@@ -439,6 +449,7 @@ impl CPU {
                 0x8a => self.txa(),
                 0xba => self.tsx(),
                 0xaa => self.tax(),
+                0xa8 => self.tay(),
 
                 /* PHA */
                 0x48 => self.stack_push(self.register_a),
@@ -539,7 +550,7 @@ impl CPU {
     }
 
     fn plp(&mut self) {
-        self.status.bits() = self.stack_pop();
+        self.status.bits = self.stack_pop();
         self.status.remove(CpuFlags::BREAK);
         self.status.insert(CpuFlags::BREAK2);
     }
@@ -801,6 +812,31 @@ impl CPU {
     fn dey(&mut self) {
         self.register_y = self.register_y.wrapping_sub(1);
         self.update_zero_and_negative_flags(self.register_y);
+    }
+
+    // Stack
+    fn stack_pop(&mut self) -> u8 {
+        self.stack_pointer = self.stack_pointer.wrapping_add(1);
+        self.mem_read((STACK as u16) + self.stack_pointer as u16) as u8
+    }
+
+    fn stack_push(&mut self, data: u8) {
+        self.mem_write((STACK as u16) + self.stack_pointer as u16, data);
+        self.stack_pointer = self.stack_pointer.wrapping_sub(1)
+    }
+
+    fn stack_push_u16(&mut self, data: u16) {
+        let hi = (data >> 8) as u8;
+        let lo = (data & 0xff) as u8;
+        self.stack_push(hi);
+        self.stack_push(lo);
+    }
+
+    fn stack_pop_u16(&mut self) -> u16 {
+        let lo = self.stack_pop() as u16;
+        let hi = self.stack_pop() as u16;
+
+        hi << 8 | lo
     }
 
 
